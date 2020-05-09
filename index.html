@@ -8,30 +8,17 @@
 </head>
 
 <body>
-    <h1>Bruce Schneier's Solitaire Cipher</h1>
+    <h1>The Solitaire Cipher</h1>
+    <p><a href='https://www.schneier.com/academic/solitaire/'>How it works</a></p>
+    <p>Top secret message:</p>
+    <textarea id='message' placeholder='The eagle flies at dawn.'></textarea>
+    <p>Passphrase:</p>
+    <input type='text' id='passphrase' placeholder='CRYPTONOMICON'>
     <div>
-        <h2>Message</h2>
-        <textarea id='input' placeholder='Your top secret message goes here.'></textarea>
-        <div>
-            <button>Encrypt</button>
-            <button>Decrypt</button>
-        </div>
-        <div id='output'>[Output goes here]</div>
+        <button id='encrypt'>Encrypt</button>
+        <button id='decrypt'>Decrypt</button>
     </div>
-    <div>
-        <h2>Key</h2>
-        <div>
-            <input type='radio' id='passphrase' name='method' value='passphrase' checked>
-            <label for='passphrase'>Passphrase:</label>
-            <input type='text' placeholder='CRYPTONOMICON'>
-        </div>
-        <div>
-            <input type='radio' id='cards' name='method' value='cards'>
-            <label for='cards'>Cards:</label><br>
-            <textarea disabled></textarea>
-        </div>
-    </div>
-    <div id='deck'></div>
+    <div id='output'></div>
 </body>
 <script src='js/jquery.js'></script>
 <script src='js/main.js'></script>

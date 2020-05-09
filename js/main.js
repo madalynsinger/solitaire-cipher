@@ -76,5 +76,4 @@ function numberToLetter(n) {
 }
 
 $(function() {
-    alert('jQuery loaded');
 });
