@@ -75,5 +75,15 @@ function numberToLetter(n) {
     return String.fromCharCode(n + 64);
 }
 
+function encrypt() {
+    alert('encrypting...');
+}
+
+function decrypt() {
+    alert('decrypting...');
+}
+
 $(function() {
+    $('#encrypt').on('click', encrypt);
+    $('#decrypt').on('click', decrypt);
 });
