@@ -3,9 +3,46 @@
 const JOKERS = ['A', 'B'];
 const UNKEYED_DECK = Array.from({ length: 52 }, (_, i) => i + 1).concat(JOKERS);
 
+function sanitize(s) {
+    return s.replace(/[^a-z]/gi, '').toUpperCase();
+}
+
+function letterToNumber(ch) {
+    return ch.charCodeAt(0) - 64;
+}
+
+function numberToLetter(n) {
+    n %= 26;
+    if (n < 1) n += 26;
+    return String.fromCharCode(n + 64);
+}
+
 class Keystream {
-    constructor(deck) {
-        this.deck = Array.from(deck);
+    constructor(passphrase) {
+        this.deck = [...UNKEYED_DECK];
+        this.keyWithPassphrase(passphrase);
+    }
+
+    keyWithPassphrase(passphrase) {
+        for (const ch of sanitize(passphrase)) {
+            this.doSolitaireStep();
+            this.countCut(letterToNumber(ch));
+        }
+    }
+
+    * makeIterator() {
+        while (true) {
+            this.doSolitaireStep();
+            let out = this.getOutputValue();
+            if (!JOKERS.includes(out)) yield out;
+        }
+    }
+
+    doSolitaireStep() {
+        this.moveDown('A', 1);
+        this.moveDown('B', 2);
+        this.tripleCut();
+        this.countCut(this.cardValueAt(53));
     }
 
     moveDown(joker, times) {
@@ -30,9 +67,8 @@ class Keystream {
         this.deck = after.concat(between).concat(before);
     }
 
-    countCut() {
+    countCut(n) {
         let deck = this.deck;
-        let n = this.cardValueAt(53);
         let top = deck.splice(0, n);
         deck.splice(deck.length - 1, 0, ...top);
     }
@@ -46,44 +82,45 @@ class Keystream {
         let i = this.cardValueAt(0);
         return this.deck[i];
     }
+}
 
-    *[Symbol.iterator]() {
-        while (true) {
-            this.moveDown('A', 1);
-            this.moveDown('B', 2);
-            this.tripleCut();
-            this.countCut();
-            let out = this.getOutputValue();
-            if (!JOKERS.includes(out)) yield out;
-        }
+function doCipher(isEncrypt) {
+    const message = $('#message').val();
+    const passphrase = $('#passphrase').val();
+    const op = isEncrypt
+        ? ((a, b) => a + b)
+        : ((a, b) => a - b);
+
+    let text = sanitize(message);
+    if (isEncrypt) {
+        let numXs = (5 - text.length % 5) % 5;
+        text += 'X'.repeat(numXs);
     }
-}
 
-function sanitizeInput(msg) {
-    msg = msg.replace(/[^a-z]/gi, '');
-    let numXs = (5 - msg.length % 5) % 5;
-    return msg.toUpperCase() + 'X'.repeat(numXs);
-}
+    let ks = new Keystream(passphrase);
+    let iter = ks.makeIterator();
+    let letters = [];
+    for (let ch of text) {
+        let n = op(letterToNumber(ch[0]), iter.next().value);
+        letters.push(numberToLetter(n));
+    }
 
-function letterToNumber(ch) {
-    return ch.charCodeAt(0) - 64;
-}
-
-function numberToLetter(n) {
-    n %= 26;
-    if (n < 1) n += 26;
-    return String.fromCharCode(n + 64);
+    let groups = [];
+    for (let i = 0; i < letters.length; i += 5) {
+        groups.push(letters.slice(i, i + 5).join(''));
+    }
+    $('#output').text(groups.join(' '));
 }
 
 function encrypt() {
-    alert('encrypting...');
+    doCipher(true);
 }
 
 function decrypt() {
-    alert('decrypting...');
+    doCipher(false);
 }
 
-$(function() {
+$(function () {
     $('#encrypt').on('click', encrypt);
     $('#decrypt').on('click', decrypt);
 });
